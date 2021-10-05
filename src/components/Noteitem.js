@@ -9,6 +9,7 @@ const Noteitem = (props) => {
     return (
         <div className="col-md-3">
             <div className="card my-3">
+            <img src={note.photo} class="card-img-top" alt="..."/>
                 <div className="card-body">
                     <div className="d-flex align-items-center">
                         <h5 className="card-title">{note.title}</h5>

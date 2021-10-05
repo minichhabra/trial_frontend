@@ -1,8 +1,15 @@
+//import meow from "meow";
 const express = require('express');
+
 const router = express.Router();
 const fetchuser = require('../middleware/fetchuser');
 const Note = require('../models/Note');
 const { body, validationResult } = require('express-validator');
+
+const multer = require('multer');
+//const { v4: uuidv4 } = require('uuid');
+//let path = require('path');
+
 
 // ROUTE 1: Get All the Notes using: GET "/api/notes/getuser". Login required
 router.get('/fetchallnotes', fetchuser, async (req, res) => {
@@ -15,21 +22,48 @@ router.get('/fetchallnotes', fetchuser, async (req, res) => {
     }
 })
 
+// Pics
+/*
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, '../images');
+        console.log('Saved');
+    },
+    filename: function(req, file, cb) {   
+        cb(null, Date.now() +file.originalname);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowedFileTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if(allowedFileTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+}
+const upload=multer({storage,fileFilter});
+*/
+
+const upload = multer({ dest: '../images' })
+
 // ROUTE 2: Add a new Note using: POST "/api/notes/addnote". Login required
-router.post('/addnote', fetchuser, [
-    body('title', 'Enter a valid title').isLength({ min: 3 }),
-    body('description', 'Description must be atleast 5 characters').isLength({ min: 5 }),], async (req, res) => {
+//[
+    //body('title', 'Enter a valid title').isLength({ min: 3 }),
+   // body('description', 'Description must be atleast 5 characters').isLength({ min: 5 })], 
+router.post('/addnote', upload.single('photo'),fetchuser, async (req, res) => {
         try {
 
             const { title, description, tag } = req.body;
-
+            const photo=req.file;
+            console.log(photo);
             // If there are errors, return Bad request and the errors
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
             const note = new Note({
-                title, description, tag, user: req.user.id
+                title, description, tag, photo,user: req.user.id
             })
             const savedNote = await note.save()
 
